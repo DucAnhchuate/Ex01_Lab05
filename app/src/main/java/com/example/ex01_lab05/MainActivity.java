@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.Toast;
 
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> data = new ArrayList<>();
 
+    ArrayList<Integer> selected = new ArrayList<>();
+
     MyAdapter adapter;
 
 
@@ -37,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         view = findViewById(R.id.view);
+
+
 
         int n = new Random().nextInt(200);
 
@@ -60,10 +65,36 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()){
+            case R.id.DAll:
+                removeAll();
+                break;
+            case R.id.DChecked:
+                deleteChecked();
+                break;
+            default:
+                break;
+        }
+        return true;
     }
 
-    private class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
+    private void deleteChecked() {
+        for (int i = 0; i < selected.size(); i ++){
+            int position = selected.get(i);
+            data.remove(position);
+            selected.remove(i);
+        }
+        adapter.notifyDataSetChanged();
+
+    }
+
+    private void removeAll() {
+        data.clear();
+        selected.clear();
+        adapter.notifyDataSetChanged();
+    }
+
+    public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
 
         @NonNull
         @Override
@@ -74,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-            String item = data.get(position);
+            String item = data.get(holder.getAdapterPosition());
             holder.checkedTextView.setText(item);
               holder.checkedTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -83,13 +114,22 @@ public class MainActivity extends AppCompatActivity {
                     if (value) {
                         // set check mark drawable and set checked property to false
                         holder.checkedTextView.setChecked(false);
+
                         Toast.makeText(MainActivity.this, "un-Checked", Toast.LENGTH_SHORT).show();
+
                         holder.checkedTextView.setBackgroundColor(Color.WHITE);
+
+                        selected.remove(holder.getAdapterPosition());
+
                     } else {
                         // set check mark drawable and set checked property to true
                         holder.checkedTextView.setChecked(true);
+
                         Toast.makeText(MainActivity.this, "Checked", Toast.LENGTH_SHORT).show();
+
                         holder.checkedTextView.setBackgroundColor(Color.RED);
+
+                        selected.add(holder.getAdapterPosition());
                     }
                 }
             });
@@ -99,9 +139,10 @@ public class MainActivity extends AppCompatActivity {
         public int getItemCount() {
             return data.size();
         }
+
     }
 
-    private class MyViewHolder extends RecyclerView.ViewHolder {
+    public class MyViewHolder extends RecyclerView.ViewHolder {
         CheckedTextView checkedTextView;
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
